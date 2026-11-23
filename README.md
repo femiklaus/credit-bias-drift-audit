@@ -70,6 +70,14 @@ warrants investigation and a documented business justification.
 (0.38) and `credit_amount` (0.21) all breach the 0.2 "significant" threshold, while unchanged
 features stay quiet. This demonstrates a monitor that is silent when it should be and loud when it matters.
 
+## Dashboard
+
+Generate the visuals with `python make_charts.py` (reads the CSVs, writes to `charts/`):
+
+![Fairness — disparate impact](charts/fairness_disparate_impact.png)
+
+![Data drift — PSI](charts/drift_psi.png)
+
 ## Recommended controls (the governance output)
 
 - **Age**: require a documented, legitimate business justification for the age gap; add a
