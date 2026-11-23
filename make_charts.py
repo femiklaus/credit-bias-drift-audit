@@ -1,6 +1,6 @@
 """
-Render the Model Governance & Drift dashboard charts from the audit outputs.
-Reads the CSVs in outputs/ and writes PNGs to charts/.
+Build the dashboard charts from the audit outputs.
+Reads the CSVs in outputs/ and saves PNGs to charts/.
 
 Usage:  python make_charts.py   (run credit_bias_drift_audit.py first)
 Requires: pandas, matplotlib
@@ -41,7 +41,7 @@ def fairness_chart() -> None:
                 ha="center", color=INK, fontweight="bold")
     ax.set_ylim(0, 1.15)
     ax.set_ylabel("Disparate Impact ratio\n(unprivileged / privileged approval rate)")
-    ax.set_title("Fairness — Disparate Impact of the credit-approval model",
+    ax.set_title("Fairness: disparate impact of the credit-approval model",
                  fontweight="bold", color=INK)
     ax.spines[["top", "right"]].set_visible(False)
     ax.grid(axis="y", color="#e5e5e5", zorder=0)
@@ -70,7 +70,7 @@ def drift_chart() -> None:
     ax.set_xticks(list(x))
     ax.set_xticklabels(feats, rotation=20, ha="right")
     ax.set_ylabel("Population Stability Index (PSI)")
-    ax.set_title("Data Drift — PSI vs training reference", fontweight="bold", color=INK)
+    ax.set_title("Data drift: PSI vs training reference", fontweight="bold", color=INK)
     ax.legend(frameon=False)
     ax.spines[["top", "right"]].set_visible(False)
     ax.grid(axis="y", color="#e5e5e5", zorder=0)

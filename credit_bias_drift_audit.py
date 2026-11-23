@@ -1,33 +1,33 @@
 """
-Credit Decision Bias & Data-Drift Audit
-=======================================
-An AI-governance portfolio project by Femi Fayinminu.
+Credit Decision: Bias and Data-Drift Audit
+===========================================
+A portfolio project by Femi Fayinminu.
 
-Audits an automated credit-decision model (trained on the UCI German Credit
-dataset) for two of the risks an AI governance analyst is paid to catch:
+This audits an automated credit-decision model, trained on the UCI German
+Credit data, for two things a governance or risk analyst gets asked to check:
 
-  1. FAIRNESS / BIAS  - does the model approve some demographic groups far less
-     often than others?  (disparate impact / four-fifths rule, demographic
-     parity, equal opportunity)
-  2. DATA DRIFT       - have the model's inputs shifted away from what it was
-     built on?  (Population Stability Index), plus a simulated "next quarter"
-     batch so you can see the monitor fire.
+  1. FAIRNESS: does the model approve some groups much less often than
+     others? (disparate impact / 80 percent rule, demographic parity,
+     equal opportunity)
+  2. DATA DRIFT: have the model's inputs moved away from what it was built
+     on? (Population Stability Index), plus a made-up "next quarter" batch so
+     you can see the monitor react.
 
-Everything is computed from first principles (no black-box fairness library) so
-the logic is transparent and defensible in an interview.
+The fairness and drift checks are written by hand (no fairness library), so the
+method is easy to follow.
 
-Governance framing (NIST AI RMF): this script operationalises MEASURE (quantify
-fairness + drift) and feeds MANAGE (thresholds that trigger review).
+NIST AI RMF: this covers the Measure part (put numbers on fairness and drift)
+and feeds the Manage part (thresholds that send a case for review).
 
-Outputs (feed the Power BI "Model Governance & Drift Dashboard"):
+Outputs (feed the Power BI dashboard):
   outputs/data_quality_report.csv
   outputs/fairness_metrics.csv
   outputs/drift_metrics.csv
-and a plain-language summary to the console.
+and a plain summary to the console.
 
-Usage:   python credit_bias_drift_audit.py
-Requires: pandas, numpy, scikit-learn   (see requirements.txt)
-Data:    UCI Statlog (German Credit Data), auto-downloaded; offline fallback noted.
+Usage:    python credit_bias_drift_audit.py
+Requires: pandas, numpy, scikit-learn  (see requirements.txt)
+Data:     UCI Statlog (German Credit Data). Downloads on its own; offline fallback noted.
 """
 
 from __future__ import annotations

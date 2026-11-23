@@ -1,100 +1,77 @@
-# Credit Decision — Bias & Data-Drift Audit
+# Credit Decision: Bias and Data-Drift Audit
 
-An AI-governance portfolio project auditing an **automated credit-decision model** for
-two of the risks a governance/risk analyst is paid to catch: **unfair outcomes** and
-**data drift**. Everything is computed from first principles (no black-box fairness
-library) so the method is transparent and defensible.
+A portfolio project. It audits an automated credit-decision model for two things a governance or risk analyst gets asked to check: is it fair, and has the data moved. I wrote the fairness and drift checks myself instead of using a library, so the method is easy to follow.
 
-**Author:** Femi Fayinminu · AI Governance & Security | Data Integrity & Requirements Analysis
-**Companion write-up (Notion):** _[add link]_  ·  **Dataset:** UCI Statlog (German Credit Data)
-
----
+**By:** Femi Fayinminu, AI Governance and Security
+**Write-up (Notion):** _[add link]_  ·  **Data:** UCI Statlog (German Credit Data)
 
 ## The question
 
-A bank uses a model to approve or decline credit. Two questions a governance review must answer:
+A bank uses a model to approve or decline credit. Two things a review has to answer:
 
-1. **Is it fair?** Does the model approve some demographic groups far less often than others —
-   even though the protected attribute (sex) was never given to it as a feature?
-2. **Is it still valid?** Have the inputs drifted away from the data the model was built on,
-   so that yesterday's model is quietly making today's decisions on a different population?
+1. **Is it fair?** Does the model approve some groups much less often than others, even though it was never given the protected trait (sex) as an input?
+2. **Is it still valid?** Has the incoming data moved away from what the model was trained on, so that yesterday's model is deciding on a different population today?
 
 ## What it does
 
-- Trains a logistic-regression approval model (sex **deliberately excluded** from the features,
-  so we can test whether disparate impact appears anyway through proxy variables).
-- **Fairness audit** on the model's approvals across protected groups:
-  - **Disparate Impact (four-fifths / 80% rule)** — ratio of approval rates (unprivileged ÷ privileged).
-  - **Demographic Parity difference** — gap in approval rates.
-  - **Equal Opportunity difference** — gap in approval rates *among genuinely creditworthy applicants*.
-- **Drift audit** using the **Population Stability Index (PSI)** per feature, with a simulated
-  "next quarter" production batch so you can see the monitor fire.
+- Trains a logistic-regression approval model. I leave sex out of the inputs on purpose, so I can test whether unfairness still shows up through other columns.
+- **Fairness check** on the model's approvals across groups:
+  - **Disparate impact (the 80 percent rule):** the ratio of approval rates, unprivileged over privileged.
+  - **Demographic parity gap:** the difference in approval rates.
+  - **Equal opportunity gap:** the difference in approval rates among people who are actually creditworthy.
+- **Drift check** using the Population Stability Index (PSI) for each feature, with a made-up "next quarter" batch so you can see the monitor react.
 
-### NIST AI RMF mapping
-This operationalises the **MEASURE** function (quantify fairness + drift) and feeds **MANAGE**
-(thresholds that trigger human review): DI < 0.80 = fail, 0.80–0.90 = watch; PSI ≥ 0.2 = significant drift.
+### How it maps to the NIST AI RMF
+It covers the Measure part (put a number on fairness and drift) and feeds the Manage part (set thresholds that send a case to a person): disparate impact below 0.80 fails, 0.80 to 0.90 is a watch, and a PSI of 0.2 or more is real drift.
 
 ## Run it
 
 ```bash
 pip install -r requirements.txt
 python credit_bias_drift_audit.py
+python make_charts.py
 ```
 
-The dataset downloads automatically (offline fallback: drop `german.data` beside the script).
-Outputs land in `outputs/` and feed the Power BI dashboard:
+The data downloads on its own. If you are offline, put `german.data` next to the script. Results go to `outputs/` and feed the charts and the Power BI dashboard.
 
-| File | Contents |
+| File | What is in it |
 |---|---|
-| `outputs/data_quality_report.csv` | dtype, missing values, cardinality per column |
-| `outputs/fairness_metrics.csv` | per-group rates + DI / parity / equal-opportunity summary |
-| `outputs/drift_metrics.csv` | PSI per feature, live vs. simulated next batch |
+| `outputs/data_quality_report.csv` | type, missing values and number of unique values per column |
+| `outputs/fairness_metrics.csv` | rates per group, plus the disparate impact and parity summary |
+| `outputs/drift_metrics.csv` | PSI per feature, live batch vs the made-up next batch |
 
-## Findings (reproducible, fixed seed)
+## Findings (same every run, fixed seed)
 
 **Fairness**
 
-| Protected attribute | Disparate impact | Demographic-parity gap | Equal-opportunity gap | Verdict |
+| Group | Disparate impact | Parity gap | Equal opportunity gap | Result |
 |---|---|---|---|---|
-| Sex (female vs male) | **0.93** | 0.05 | 0.03 | PASS (within 80% rule) |
-| Age group (under-25 vs 25+) | **0.86** | 0.11 | 0.13 | **WATCH** |
+| Sex (female vs male) | **0.93** | 0.05 | 0.03 | Passes the 80 percent rule |
+| Age (under 25 vs 25 and over) | **0.86** | 0.11 | 0.13 | **Watch** |
 
-Even though **sex was never a model input**, outcomes are close to parity on sex — but **age
-shows a real signal**: applicants under 25 are approved at ~86% the rate of older applicants, and
-the equal-opportunity gap (0.13) means that *even among genuinely creditworthy applicants*, younger
-ones are approved less often. It sits above the 0.80 legal-red-flag line but inside the zone that
-warrants investigation and a documented business justification.
+Even though sex is never an input, the result on sex is close to fair, and the model did not pick up the bias through other columns. Age is different: people under 25 are approved at about 86 percent of the rate of older people, and the gap holds even among young people who are actually creditworthy. It sits above the 0.80 legal line but in the range that needs a closer look and a written business reason.
 
-**Drift** — PSI stays below 0.1 on the live test set (no drift, as expected), and the monitor
-**correctly fires** on the simulated next-quarter batch: `duration_months` (0.64), `age_years`
-(0.38) and `credit_amount` (0.21) all breach the 0.2 "significant" threshold, while unchanged
-features stay quiet. This demonstrates a monitor that is silent when it should be and loud when it matters.
+**Drift.** PSI stays low on the live data (no drift, as expected). The monitor reacts on the made-up next-quarter batch: loan duration (0.64), age (0.38) and credit amount (0.21) all cross the 0.2 line, while the columns I did not change stay quiet. So it is quiet when it should be and loud when it matters.
 
 ## Dashboard
 
-Generate the visuals with `python make_charts.py` (reads the CSVs, writes to `charts/`):
+Run `python make_charts.py` to build the charts from the CSVs (saved to `charts/`):
 
-![Fairness — disparate impact](charts/fairness_disparate_impact.png)
+![Fairness, disparate impact](charts/fairness_disparate_impact.png)
 
-![Data drift — PSI](charts/drift_psi.png)
+![Data drift, PSI](charts/drift_psi.png)
 
-## Recommended controls (the governance output)
+## What to do about it (the governance output)
 
-- **Age**: require a documented, legitimate business justification for the age gap; add a
-  recurring fairness check to the model's monitoring with DI as a tracked KPI.
-- **Drift**: schedule the PSI check on each new batch; PSI ≥ 0.2 on any decision-relevant feature
-  triggers a human review and a retraining decision before the model keeps deciding.
-- **Proxies**: because disparate impact can appear without the protected attribute as a feature,
-  audit *outcomes*, not just inputs.
+- **Age:** ask for a clear business reason for the gap, and track disparate impact as a number you watch.
+- **Drift:** run the PSI check on every new batch. A PSI of 0.2 or more on any decision column sends the batch to a person and a retrain decision before the model keeps deciding.
+- **Proxies:** unfairness can show up without the protected trait being an input, so check the outcomes, not just the inputs.
 
-## Honest limitations
+## Honest limits
 
-- The target label is historical credit outcomes, which may themselves carry bias; a real audit
-  would also examine label provenance.
-- The "next quarter" drift is simulated to demonstrate the monitor; in production it runs on real batches.
-- `foreign_worker` was excluded from the fairness view because the domestic subgroup is too small
-  (~3.7% of records) for a stable rate — a real audit would flag it as "insufficient sample, monitor".
+- The label is past credit outcomes, which may carry their own bias. A real audit would also look at where the label came from.
+- The next-quarter drift is made up to show the monitor working. In real life it runs on real batches.
+- I left `foreign_worker` out of the fairness view because the home group is too small (about 3.7 percent) for a steady rate. A real audit would mark it as too small to judge and keep watching.
 
-## Skills shown
-Python · scikit-learn · pandas/numpy · fairness metrics · PSI drift detection · data-quality profiling ·
-NIST AI RMF framing · translating technical findings into controls for non-technical leadership.
+## What this shows
+Python, scikit-learn, pandas and numpy, fairness checks, PSI drift detection, data-quality checks, NIST AI RMF framing, and turning the result into controls a non-technical manager can act on.

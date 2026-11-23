@@ -1,40 +1,29 @@
-# Executive Summary — Credit Model Bias & Drift Audit
+# Executive Summary: Credit Model Bias and Drift Audit
 
-**Prepared by:** Femi Fayinminu  ·  **Audience:** Risk / Compliance leadership (non-technical)
-**Scope:** Fairness and data-drift review of an automated credit-approval model.
+**By:** Femi Fayinminu  ·  **For:** risk and compliance leaders (non-technical)
+**Scope:** a fairness and data-drift review of an automated credit-approval model.
 
-## Why this matters
-An automated model decides who gets credit. If it approves some groups far less often than others,
-the bank carries legal and reputational risk; if the incoming data has shifted away from what the
-model was trained on, the model is making today's decisions on yesterday's assumptions. This review
-measured both.
+## Why it matters
+A model decides who gets credit. If it approves some groups much less often than others, the bank carries legal and reputation risk. If the incoming data has moved away from what the model was trained on, the model is deciding today on old assumptions. This review checked both.
 
 ## What we found
 
-**1. Fairness — one green, one to watch.**
-- **Sex:** approvals are effectively at parity (disparate-impact ratio 0.93, inside the 80% rule).
-  Notably, the model was never given sex as an input, and it did **not** back-door the bias through
-  proxies — a good result.
-- **Age:** applicants **under 25 are approved at ~86% the rate of older applicants** (disparate-impact
-  ratio 0.86). The gap holds **even among genuinely creditworthy young applicants**. This is above the
-  0.80 legal-red-flag line but inside the zone that requires a documented justification and ongoing monitoring.
+**1. Fairness: one is fine, one to watch.**
+- **Sex:** approvals are close to even (ratio 0.93, inside the 80 percent rule). The model was never given sex, and it did not pick up the bias through other columns, which is a good sign.
+- **Age:** people under 25 are approved at about 86 percent of the rate of older people (ratio 0.86). The gap holds even among young people who are actually creditworthy. It is above the 0.80 legal line but in the range that needs a written reason and ongoing checks.
 
-**2. Drift monitoring — working as designed.**
-- On current data, the monitor is quiet (no meaningful drift).
-- On a simulated next-quarter batch, it **correctly flagged** significant shifts in loan duration, age,
-  and credit amount — the signal a team needs to pause and re-check the model before it keeps deciding.
+**2. Drift monitor: working.**
+- On current data, the monitor is quiet (no real drift).
+- On a made-up next-quarter batch, it flagged big moves in loan length, age and credit amount, which is the sign a team needs to pause and recheck the model.
 
-## Risk if ignored
-- **Age gap unexamined** → potential discrimination exposure and no audit trail of a justification.
-- **No drift gate** → silent model decay; approvals drift off-target without anyone noticing until losses appear.
+## The risk if we ignore it
+- Leaving the age gap unchecked: possible discrimination risk, with no record of a reason.
+- No drift gate: the model quietly goes off target and no one notices until losses show up.
 
-## Recommended actions
-1. Require a documented business justification for the age gap; track disparate impact as a monitored KPI.
-2. Run the drift check on every new batch; a PSI of 0.2+ on any decision feature triggers human review
-   and a retraining decision.
-3. Audit **outcomes**, not just inputs — bias can appear without the protected attribute being a feature.
+## What to do
+1. Ask for a clear business reason for the age gap, and track disparate impact as a number you watch.
+2. Run the drift check on every new batch. A PSI of 0.2 or more on any decision column sends it to a person and a retrain decision.
+3. Check the outcomes, not just the inputs. Bias can show up without the protected trait being an input.
 
-## Framework alignment
-Maps to the **NIST AI RMF** Measure function (quantifying fairness and drift) and Manage function
-(thresholds that trigger review), and to the fairness/transparency expectations in **ISO/IEC 42001**
-and the **EU AI Act** high-risk requirements for data governance and accuracy monitoring.
+## How it lines up with the rules
+It matches the NIST AI RMF Measure part (put numbers on fairness and drift) and Manage part (thresholds that send a case for review), and the fairness and transparency parts of ISO/IEC 42001 and the EU AI Act high-risk rules for data handling and accuracy checks.
