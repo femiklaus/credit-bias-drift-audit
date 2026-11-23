@@ -1,0 +1,7 @@
+protected_attribute,group,role,n,selection_rate,true_positive_rate,false_positive_rate,disparate_impact_ratio,demographic_parity_diff,equal_opportunity_diff,four_fifths_rule
+sex,male,privileged,204,0.77,0.857,0.544,,,,
+sex,female,unprivileged,96,0.719,0.825,0.515,,,,
+sex,[SUMMARY],female vs male,300,,,,0.934,0.051,0.032,PASS
+age_group,25_and_over,privileged,253,0.771,0.864,0.522,,,,
+age_group,under_25,unprivileged,47,0.66,0.731,0.571,,,,
+age_group,[SUMMARY],under_25 vs 25_and_over,300,,,,0.856,0.111,0.133,WATCH (0.80-0.90)
